@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axon Proxy</title>
+  <meta name="description" content="High-speed HTTP, HTTPS, and SOCKS5 proxy router with smart split tunneling, CDN bundles, right-click rules, and WebRTC leak protection." />
+  <meta property="og:title" content="Axon Proxy" />
+  <meta property="og:description" content="High-speed HTTP, HTTPS, and SOCKS5 proxy router with smart split tunneling, CDN bundles, right-click rules, and WebRTC leak protection." />
+  <link rel="icon" type="image/png" href="/icons/icon32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/preview/wrapper.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-brand" id="extensionAction" title="Axon Proxy — Unprotected (Direct)">
+        <div class="ext-icon-wrap">
+          <img src="/icons/icon32.png" alt="Axon Proxy icon" width="26" height="26" />
+          <span class="ext-badge hidden" id="extBadge"></span>
+        </div>
+        <span class="topbar-title">Axon Proxy</span>
+      </div>
+
+      <div class="sim-controls">
+        <label class="sim-tab-wrap" title="Simulated browser tab for testing 1-click & right-click rules">
+          <span class="sim-label">Tab</span>
+          <select id="simTabSelect">
+            <option value="https://www.youtube.com/watch?v=dQw4w9WgXcQ">youtube.com</option>
+            <option value="https://x.com/home">x.com</option>
+            <option value="https://discord.com/channels/@me">discord.com</option>
+            <option value="https://github.com/explore">github.com</option>
+            <option value="https://example.com/">example.com</option>
+          </select>
+        </label>
+
+        <div class="context-menu-wrap">
+          <button type="button" class="ctx-trigger" id="ctxTrigger">Right-click menu ▾</button>
+          <div class="ctx-dropdown hidden" id="ctxDropdown" role="menu"></div>
+        </div>
+      </div>
+
+      <nav class="view-switcher" role="tablist" aria-label="Extension view">
+        <button
+          type="button"
+          class="switcher-btn active"
+          data-view="popup"
+          role="tab"
+          aria-selected="true"
+        >
+          Popup
+        </button>
+        <button
+          type="button"
+          class="switcher-btn"
+          data-view="options"
+          role="tab"
+          aria-selected="false"
+        >
+          Full Settings
+        </button>
+      </nav>
+    </header>
+
+    <main class="stage stage-popup" id="stage">
+      <div class="frame-host" id="frameHost">
+        <iframe
+          id="previewFrame"
+          src="/popup/popup.html"
+          title="Axon Proxy Extension View"
+        ></iframe>
+      </div>
+    </main>
+  </div>
+
+  <div class="wrapper-toast hidden" id="wrapperToast"></div>
+
+  <script type="module" src="/preview/wrapper.js"></script>
+</body>
+</html>

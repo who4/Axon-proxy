@@ -1,0 +1,5 @@
+{
+  "name": "Axon Proxy",
+  "description": "High-speed HTTP, HTTPS, and SOCKS5 proxy router with smart split tunneling, CDN bundles, right-click rules, and WebRTC leak protection.",
+  "requestFramePermissions": []
+}

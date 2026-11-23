@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axon Proxy — Privacy Policy</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0d;
+      --surface: #141418;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f4f4f6;
+      --muted: #9b9ca6;
+      --accent: #24d858;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 48px 20px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      line-height: 1.65;
+    }
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px 40px;
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+    .meta { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+    h2 { margin: 28px 0 10px; font-size: 18px; color: var(--accent); }
+    p, li { color: #d6d7de; font-size: 15px; }
+    ul { padding-left: 20px; }
+    code {
+      background: rgba(255, 255, 255, 0.07);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Axon Proxy — Privacy Policy</h1>
+    <div class="meta">Effective Date: November 22, 2026 · Extension Version 2.0.0</div>
+
+    <p>
+      Axon Proxy is a client-side Chrome extension that routes browser traffic through user-configured
+      HTTP, HTTPS, or SOCKS5 proxy servers. We do not operate proxy servers, collect browsing history,
+      track users, or transmit personal data to third-party analytics services.
+    </p>
+
+    <h2>1. Data Stored Locally on Your Device</h2>
+    <p>
+      All configuration data—including proxy server addresses, ports, optional authentication credentials,
+      split-tunneling rules, and extension preferences—is stored exclusively inside Chrome's local extension
+      storage (<code>chrome.storage.local</code>) or, when "Session-only credentials" is enabled, in
+      volatile browser session memory (<code>chrome.storage.session</code>) that is cleared when Chrome closes.
+    </p>
+
+    <h2>2. Network Requests Made by the Extension</h2>
+    <ul>
+      <li>
+        <strong>User-Configured Proxies:</strong> When connected, Chrome routes matching traffic directly
+        through the proxy server you explicitly entered.
+      </li>
+      <li>
+        <strong>Optional Connection Diagnostics:</strong> When you connect or click "Test connection",
+        Axon Proxy performs a lightweight check to <code>https://api.ipify.org?format=json</code> (to display
+        your current external exit IP) and <code>https://www.google.com/generate_204</code> (to measure
+        round-trip latency). No user identifiers, credentials, or browsing history are sent.
+      </li>
+    </ul>
+
+    <h2>3. How Chrome Permissions Are Used</h2>
+    <ul>
+      <li><code>proxy</code>: Applies your selected proxy profile and generated PAC split-tunneling rules.</li>
+      <li><code>storage</code>: Saves your proxy profiles, rules, and preferences locally on your device.</li>
+      <li><code>webRequest</code> &amp; <code>webRequestAuthProvider</code>: Supplies proxy authentication credentials exclusively to your configured proxy host and detects companion CDN hostnames loaded by the active tab for split-tunnel rules.</li>
+      <li><code>contextMenus</code>: Adds right-click menu options to route or bypass the current site or link.</li>
+      <li><code>tabs</code>: Reads the active tab's hostname so you can add one-click site rules and optionally reload tabs when rules change.</li>
+      <li><code>privacy</code>: Applies Chrome's WebRTC IP handling policy when the WebRTC IP leak guard is enabled.</li>
+      <li><code>&lt;all_urls&gt;</code>: Required by Chrome for proxy authentication callbacks and per-tab companion CDN detection across any site you choose to route.</li>
+    </ul>
+
+    <h2>4. Data Sharing &amp; Selling</h2>
+    <p>
+      Axon Proxy does not collect, sell, rent, or transfer user data to any third parties. JSON backups
+      exported by the user omit proxy usernames and passwords by default unless explicitly opted in.
+    </p>
+
+    <h2>5. Contact</h2>
+    <p>
+      If you have questions about this Privacy Policy, please contact the developer through the Chrome Web Store
+      support listing for Axon Proxy.
+    </p>
+  </main>
+</body>
+</html>

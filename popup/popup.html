@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axon Proxy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <main class="viewport">
+      <!-- MAIN PANEL -->
+      <section id="panel-main" class="panel active" role="tabpanel">
+        <div class="hero-stage">
+          <div class="hero-status">
+            <h1 id="heroTitle">Unprotected</h1>
+            <div class="status-readout unprotected" id="statusReadout">IP exposed</div>
+          </div>
+
+          <div class="matrix-wrap" aria-hidden="true">
+            <div class="matrix-grid" id="matrixGrid"></div>
+          </div>
+
+          <div class="session-timer" id="sessionTimer">00:00</div>
+
+          <div class="metrics-strip">
+            <div class="metric-item">
+              <span class="metric-label">Routing</span>
+              <div class="metric-value">
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M12 8v8m-3-3 3 3 3-3"/>
+                </svg>
+                <span id="routingMetric">Direct</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Speed</span>
+              <div class="metric-value">
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="9"/>
+                  <polyline points="12 7 12 12 15 14"/>
+                </svg>
+                <span id="latencyMetric">0 ms</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-controls">
+          <button type="button" class="cta-btn connect" id="connectBtn">
+            CONNECT
+          </button>
+
+          <button type="button" class="diag-link" id="testBtn">
+            Test connection
+          </button>
+
+          <button type="button" class="conflict-banner hidden" id="conflictBanner">
+            Proxy overridden by another extension or policy
+          </button>
+
+          <button type="button" class="selector-card" id="selectorCard">
+            <div class="selector-avatar" id="selectorAvatar">AX</div>
+            <div class="selector-info">
+              <div class="selector-name" id="selectorName">No proxy selected</div>
+              <div class="selector-sub" id="selectorSub">Add an HTTP, HTTPS, or SOCKS5 proxy</div>
+            </div>
+            <svg class="selector-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          <div class="site-quick-card hidden" id="siteQuickCard">
+            <div class="site-quick-meta">
+              <div class="site-quick-domain" id="siteQuickDomain">youtube.com</div>
+              <div class="site-quick-hint" id="siteQuickHint">Smart CDN bundle ready</div>
+            </div>
+            <div class="site-quick-actions">
+              <button type="button" class="quick-pill" id="quickProxyBtn" title="Route this site + CDNs through proxy">Proxy</button>
+              <button type="button" class="quick-pill" id="quickDirectBtn" title="Bypass proxy for this site">Direct</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROXIES PANEL -->
+      <section id="panel-proxies" class="panel" role="tabpanel" hidden>
+        <div class="sub-header">
+          <div>
+            <h2>Proxies</h2>
+            <p>Select a server or add HTTP, HTTPS, and SOCKS5 profiles.</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-icon" id="addProxyBtn" title="Add proxy" aria-label="Add proxy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="search" id="searchInput" placeholder="Search proxies by name or host…" autocomplete="off" />
+        </div>
+
+        <ul class="proxy-list" id="proxyList"></ul>
+
+        <div class="empty-state hidden" id="emptyState">
+          <div class="empty-mark">
+            <svg viewBox="0 0 28 24" fill="none">
+              <rect x="10" y="2" width="4" height="4" rx="1" fill="#24D858"/>
+              <rect x="6" y="7" width="4" height="4" rx="1" fill="#24D858"/>
+              <rect x="14" y="7" width="4" height="4" rx="1" fill="#24D858"/>
+              <rect x="2" y="12" width="4" height="4" rx="1" fill="#24D858"/>
+              <rect x="10" y="12" width="4" height="4" rx="1" fill="#2EE864"/>
+              <rect x="18" y="12" width="4" height="4" rx="1" fill="#24D858"/>
+            </svg>
+          </div>
+          <p>No proxy profiles yet</p>
+          <span>Add your first HTTP, HTTPS, or SOCKS5 server</span>
+          <button type="button" class="btn btn-mint" id="emptyAddProxyBtn">Add proxy</button>
+        </div>
+      </section>
+
+      <!-- RULES / SPLIT TUNNEL PANEL -->
+      <section id="panel-rules" class="panel" role="tabpanel" hidden>
+        <div class="sub-header">
+          <div>
+            <h2>Split tunneling</h2>
+            <p>Route specific domains, video CDNs, or subnets per rule.</p>
+          </div>
+          <label class="switch" title="Enable split tunneling">
+            <input type="checkbox" id="splitEnabled" />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="policy-card">
+          <span class="policy-label">Default for unmatched traffic</span>
+          <div class="segmented" role="group">
+            <button type="button" class="segmented-btn active" data-policy="proxy">Via proxy</button>
+            <button type="button" class="segmented-btn" data-policy="direct">Direct</button>
+          </div>
+        </div>
+
+        <div class="rules-bar">
+          <span class="rules-count" id="rulesCount">0 rules</span>
+          <button type="button" class="btn btn-sm btn-primary" id="addRuleBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Add rule
+          </button>
+        </div>
+
+        <ul class="rule-list" id="ruleList"></ul>
+
+        <div class="empty-rules-box hidden" id="emptyRulesBox">
+          <p>No split-tunnel rules yet</p>
+          <span>Add a domain like *.youtube.com or right-click any webpage.</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- FLOATING CAPSULE DOCK -->
+    <nav class="dock" role="tablist" aria-label="Axon Proxy navigation">
+      <button type="button" class="dock-btn active" data-tab="main" role="tab" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6.5h-5V21H4a1 1 0 0 1-1-1v-9.5Z"/>
+        </svg>
+        <span>Main</span>
+      </button>
+      <button type="button" class="dock-btn" data-tab="proxies" role="tab" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <rect x="3" y="4" width="18" height="6" rx="2"/>
+          <rect x="3" y="14" width="18" height="6" rx="2"/>
+          <path d="M7 7h.01M7 17h.01"/>
+        </svg>
+        <span>Proxies</span>
+      </button>
+      <button type="button" class="dock-btn" data-tab="rules" role="tab" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <path d="M4 6h7l2 6-2 6H4"/>
+          <path d="M13 12h7"/>
+          <polyline points="17 9 20 12 17 15"/>
+        </svg>
+        <span>Rules</span>
+      </button>
+      <button type="button" class="dock-btn" id="openOptionsBtn" role="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+        </svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ADD / EDIT PROXY MODAL -->
+  <dialog class="modal" id="proxyModal">
+    <form id="proxyForm" method="dialog">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add proxy</h3>
+        <button type="button" class="btn-icon-ghost" id="closeModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="proxyId" />
+        <label class="field">
+          <span>Quick paste URI (optional)</span>
+          <input type="text" id="proxyQuickPaste" placeholder="socks5://user:pass@127.0.0.1:1080" autocomplete="off" />
+        </label>
+        <div class="field-row">
+          <label class="field flex-2">
+            <span>Name</span>
+            <input type="text" id="proxyName" placeholder="e.g. Netherlands" required />
+          </label>
+          <label class="field flex-1">
+            <span>Badge</span>
+            <input type="text" id="proxyBadge" placeholder="NL" maxlength="4" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field flex-2">
+            <span>Host</span>
+            <input type="text" id="proxyHost" placeholder="127.0.0.1" required />
+          </label>
+          <label class="field flex-1">
+            <span>Port</span>
+            <input type="number" id="proxyPort" placeholder="1080" min="1" max="65535" required />
+          </label>
+        </div>
+        <div class="field">
+          <span>Protocol</span>
+          <div class="type-picker" role="radiogroup">
+            <label class="type-option">
+              <input type="radio" name="proxyType" value="socks5" checked />
+              <span>SOCKS5</span>
+            </label>
+            <label class="type-option">
+              <input type="radio" name="proxyType" value="http" />
+              <span>HTTP</span>
+            </label>
+            <label class="type-option">
+              <input type="radio" name="proxyType" value="https" />
+              <span>HTTPS</span>
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <span>Badge color</span>
+          <div class="color-swatches" id="colorSwatches"></div>
+        </div>
+        <label class="field">
+          <span>Failover backup proxy</span>
+          <select id="proxyFallback">
+            <option value="">None</option>
+          </select>
+        </label>
+        <details class="auth-details">
+          <summary>Authentication (optional)</summary>
+          <label class="field">
+            <span>Username</span>
+            <input type="text" id="proxyUser" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="proxyPass" autocomplete="off" />
+          </label>
+        </details>
+        <p class="form-error hidden" id="formError"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelModal">Cancel</button>
+        <button type="submit" class="btn btn-mint">Save proxy</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ADD / EDIT RULE MODAL -->
+  <dialog class="modal" id="ruleModal">
+    <form id="ruleForm" method="dialog">
+      <div class="modal-header">
+        <h3 id="ruleModalTitle">Add rule</h3>
+        <button type="button" class="btn-icon-ghost" id="closeRuleModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ruleId" />
+        <label class="field">
+          <span>Pattern</span>
+          <input type="text" id="rulePattern" placeholder="*.youtube.com" required />
+          <small id="bundleHint">Use *.domain.com, domain.com, or comma-separated hosts</small>
+        </label>
+        <div class="field-row">
+          <label class="field flex-1">
+            <span>Match type</span>
+            <select id="ruleMatchType">
+              <option value="domain">Domain</option>
+              <option value="wildcard">Wildcard</option>
+              <option value="regex">RegExp</option>
+              <option value="cidr">IP / CIDR</option>
+            </select>
+          </label>
+          <label class="field flex-1">
+            <span>Action</span>
+            <select id="ruleAction">
+              <option value="proxy">Use proxy</option>
+              <option value="direct">Bypass (Direct)</option>
+            </select>
+          </label>
+        </div>
+        <label class="field" id="ruleProxyField">
+          <span>Target proxy</span>
+          <select id="ruleProxyId">
+            <option value="">Active proxy</option>
+          </select>
+        </label>
+        <label class="checkbox-row" id="ruleCompanionsRow">
+          <input type="checkbox" id="ruleIncludeCompanions" checked />
+          <span>Auto-include companion media &amp; CDN domains</span>
+        </label>
+        <p class="form-error hidden" id="ruleFormError"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelRuleModal">Cancel</button>
+        <button type="submit" class="btn btn-mint">Save rule</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

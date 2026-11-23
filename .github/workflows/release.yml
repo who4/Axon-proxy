@@ -1,0 +1,92 @@
+name: Release Chrome Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, Package & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Resolve release metadata
+        id: meta
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          MANIFEST_VERSION="$(node -p "JSON.parse(require('node:fs').readFileSync('manifest.json', 'utf8')).version")"
+          TAG_VERSION="${TAG_NAME#v}"
+
+          if [ "${MANIFEST_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "::warning::manifest.json version (${MANIFEST_VERSION}) does not match Git tag (${TAG_NAME})."
+          fi
+
+          ZIP_NAME="axon-proxy-${TAG_NAME}.zip"
+          ZIP_PATH="dist/${ZIP_NAME}"
+
+          echo "manifest_version=${MANIFEST_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "zip_name=${ZIP_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "zip_path=${ZIP_PATH}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate syntax and run tests
+        run: |
+          npm run build
+          npm run lint
+          node --test lib/engine.test.js
+
+      - name: Package Chrome extension ZIP
+        env:
+          MANIFEST_VERSION: ${{ steps.meta.outputs.manifest_version }}
+          ZIP_PATH: ${{ steps.meta.outputs.zip_path }}
+        run: |
+          npm run pack:cws
+          BUILT_ZIP="dist/axon-proxy-v${MANIFEST_VERSION}-chrome-web-store.zip"
+          if [ ! -f "${BUILT_ZIP}" ]; then
+            echo "::error::Expected packaged archive not found at ${BUILT_ZIP}"
+            exit 1
+          fi
+          mv -f "${BUILT_ZIP}" "${ZIP_PATH}"
+
+      - name: Verify distributable ZIP contents
+        env:
+          ZIP_PATH: ${{ steps.meta.outputs.zip_path }}
+        run: |
+          unzip -t "${ZIP_PATH}"
+          CONTENTS="$(unzip -Z1 "${ZIP_PATH}")"
+          echo "Packaged files:"
+          echo "${CONTENTS}"
+
+          if ! printf '%s\n' "${CONTENTS}" | grep -qx 'manifest.json'; then
+            echo "::error::manifest.json must be at the root of ${ZIP_PATH}"
+            exit 1
+          fi
+
+          if printf '%s\n' "${CONTENTS}" | grep -qE '(^|/)\.git(/|$)|(^|/)\.github(/|$)|(^|/)node_modules(/|$)|^preview/|^server\.js$|^store/|^scripts/|^dist/|\.test\.js$'; then
+            echo "::error::Non-extension or development files detected inside ${ZIP_PATH}"
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.meta.outputs.zip_path }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

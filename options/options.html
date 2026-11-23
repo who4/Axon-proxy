@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axon Proxy — Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 28 24" fill="none">
+            <rect x="11" y="2" width="4" height="4" rx="1" fill="#4EF27C"/>
+            <rect x="6" y="7" width="4" height="4" rx="1" fill="#24D858"/>
+            <rect x="16" y="7" width="4" height="4" rx="1" fill="#24D858"/>
+            <rect x="2" y="12" width="4" height="4" rx="1" fill="#24D858"/>
+            <rect x="11" y="12" width="4" height="4" rx="1" fill="#4EF27C"/>
+            <rect x="20" y="12" width="4" height="4" rx="1" fill="#24D858"/>
+            <rect x="2" y="17" width="4" height="4" rx="1" fill="#187A38"/>
+            <rect x="20" y="17" width="4" height="4" rx="1" fill="#187A38"/>
+          </svg>
+        </div>
+        <div>
+          <strong>Axon Proxy</strong>
+          <span id="sidebarStatus">Unprotected · Direct</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Settings sections">
+        <a href="#split" class="nav-link active">Split tunneling</a>
+        <a href="#proxies" class="nav-link">Proxies</a>
+        <a href="#privacy" class="nav-link">Privacy &amp; browser</a>
+        <a href="#backup" class="nav-link">Backup &amp; import</a>
+        <a href="#pac" class="nav-link">PAC &amp; help</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <!-- SPLIT TUNNELING -->
+      <section id="split" class="section">
+        <header class="section-header">
+          <div>
+            <h1>Split tunneling</h1>
+            <p>Rules are evaluated strictly top to bottom. Matching platforms automatically expand companion video and CDN domains.</p>
+          </div>
+          <label class="switch" title="Enable split tunneling">
+            <input type="checkbox" id="splitEnabled" />
+            <span class="switch-track"></span>
+          </label>
+        </header>
+
+        <div class="surface-block">
+          <div class="block-row">
+            <div>
+              <h2>Default behavior</h2>
+              <p class="muted">Applied when no rule matches the destination host or URL.</p>
+            </div>
+            <div class="segmented" role="group">
+              <button type="button" class="segmented-btn active" data-policy="proxy">Route via proxy</button>
+              <button type="button" class="segmented-btn" data-policy="direct">Direct connection</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE URL ROUTING SIMULATOR -->
+        <div class="surface-block">
+          <h2>Live URL routing tester</h2>
+          <p class="muted">Test any site or media CDN URL (for example <code>googlevideo.com</code> or <code>i.ytimg.com</code>) to verify which rule and proxy handles it.</p>
+          <form class="tester-form" id="routeTesterForm">
+            <input
+              type="text"
+              id="routeTestInput"
+              placeholder="https://rr1---sn-video.googlevideo.com/videoplayback"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn btn-mint">Test route</button>
+          </form>
+          <div class="tester-result hidden" id="routeTestResult"></div>
+        </div>
+
+        <!-- RULES TABLE -->
+        <div class="surface-block">
+          <div class="block-toolbar">
+            <div>
+              <h2>Routing rules</h2>
+              <p class="muted">Drag rows or use arrows to reorder priority. Toggle individual rules without deleting them.</p>
+            </div>
+            <button type="button" class="btn btn-mint" id="addRuleBtn">Add rule</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="rules-table" id="rulesTable">
+              <thead>
+                <tr>
+                  <th class="col-toggle">On</th>
+                  <th>Pattern &amp; companions</th>
+                  <th>Match</th>
+                  <th>Route target</th>
+                  <th class="col-actions">Priority &amp; actions</th>
+                </tr>
+              </thead>
+              <tbody id="rulesBody"></tbody>
+            </table>
+          </div>
+          <p class="empty-note hidden" id="emptyRules">
+            No rules yet. Add <code>*.youtube.com</code> to automatically include YouTube video and thumbnail CDNs, or use a quick bundle below.
+          </p>
+        </div>
+
+        <!-- QUICK SMART BUNDLES -->
+        <div class="surface-block">
+          <h2>Smart site bundles</h2>
+          <p class="muted">One-click multi-domain bundles including video streams, thumbnails, images, and APIs.</p>
+          <div class="bundle-grid" id="bundleGrid"></div>
+        </div>
+      </section>
+
+      <!-- PROXIES -->
+      <section id="proxies" class="section hidden">
+        <header class="section-header">
+          <div>
+            <h1>Proxies</h1>
+            <p>Manage HTTP, HTTPS, and SOCKS5 servers with custom badges and automatic failover chains.</p>
+          </div>
+          <button type="button" class="btn btn-mint" id="addProxyBtn">Add proxy</button>
+        </header>
+
+        <div class="proxy-grid" id="proxyGrid"></div>
+        <p class="empty-note hidden" id="emptyProxies">No proxy profiles yet. Click Add proxy or paste a proxy URI to begin.</p>
+      </section>
+
+      <!-- PRIVACY & BROWSER -->
+      <section id="privacy" class="section hidden">
+        <header class="section-header">
+          <div>
+            <h1>Privacy &amp; browser</h1>
+            <p>Leak protection, right-click menu behavior, authentication hygiene, and conflict diagnostics.</p>
+          </div>
+        </header>
+
+        <div class="surface-block">
+          <h2>Network &amp; leak protection</h2>
+          <div class="settings-list">
+            <label class="setting-item">
+              <div>
+                <strong>WebRTC IP leak guard</strong>
+                <p class="muted">Sets Chrome WebRTC policy to <code>disable_non_proxied_udp</code> while Axon Proxy is connected.</p>
+              </div>
+              <span class="switch">
+                <input type="checkbox" id="settingWebrtc" />
+                <span class="switch-track"></span>
+              </span>
+            </label>
+
+            <label class="setting-item">
+              <div>
+                <strong>Always bypass local &amp; private networks</strong>
+                <p class="muted">Keep <code>localhost</code>, <code>127.0.0.0/8</code>, and RFC1918 LAN addresses on direct connections.</p>
+              </div>
+              <span class="switch">
+                <input type="checkbox" id="settingBypassLocal" />
+                <span class="switch-track"></span>
+              </span>
+            </label>
+
+            <label class="setting-item">
+              <div>
+                <strong>Session-only proxy credentials</strong>
+                <p class="muted">Store proxy usernames and passwords in memory (<code>chrome.storage.session</code>) so they clear when Chrome closes.</p>
+              </div>
+              <span class="switch">
+                <input type="checkbox" id="settingSessionAuth" />
+                <span class="switch-track"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="surface-block">
+          <h2>Right-click context menu &amp; CDN capture</h2>
+          <div class="settings-list">
+            <label class="setting-item">
+              <div>
+                <strong>Enable page &amp; link right-click menu</strong>
+                <p class="muted">Right-click any website to route it via proxy, a specific server, or direct network.</p>
+              </div>
+              <span class="switch">
+                <input type="checkbox" id="settingContextMenu" />
+                <span class="switch-track"></span>
+              </span>
+            </label>
+
+            <label class="setting-item">
+              <div>
+                <strong>Auto-include companion media &amp; CDN domains</strong>
+                <p class="muted">Automatically bundle known CDN domains (e.g. YouTube <code>googlevideo.com</code>, <code>ytimg.com</code>) plus live tab subresources.</p>
+              </div>
+              <span class="switch">
+                <input type="checkbox" id="settingAutoCompanions" />
+                <span class="switch-track"></span>
+              </span>
+            </label>
+
+            <label class="setting-item">
+              <div>
+                <strong>Auto-reload tab after right-click rule change</strong>
+                <p class="muted">Immediately reloads the active page so video streams and thumbnails fetch over the new route.</p>
+              </div>
+              <span class="switch">
+                <input type="checkbox" id="settingAutoReload" />
+                <span class="switch-track"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="surface-block">
+          <div class="block-toolbar">
+            <div>
+              <h2>Chrome proxy control status</h2>
+              <p class="muted">Detects whether another VPN extension or enterprise policy is overriding Axon Proxy.</p>
+            </div>
+            <button type="button" class="btn btn-ghost" id="refreshControlBtn">Re-check</button>
+          </div>
+          <div class="control-status-row" id="controlStatusBox">Checking proxy control…</div>
+        </div>
+
+        <div class="surface-block">
+          <h2>Keyboard shortcuts</h2>
+          <div class="shortcut-list">
+            <div class="shortcut-row">
+              <span>Toggle Axon Proxy on / off</span>
+              <kbd>Alt + Shift + P</kbd>
+            </div>
+            <div class="shortcut-row">
+              <span>Cycle to next saved proxy profile</span>
+              <kbd>Alt + Shift + N</kbd>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BACKUP & IMPORT -->
+      <section id="backup" class="section hidden">
+        <header class="section-header">
+          <div>
+            <h1>Backup &amp; import</h1>
+            <p>Export your profiles and split-tunnel rules or bulk-import domain lists locally.</p>
+          </div>
+        </header>
+
+        <div class="surface-block">
+          <h2>Export configuration</h2>
+          <p class="muted">Download your Axon Proxy configuration as a portable JSON file.</p>
+          <label class="checkbox-row export-check">
+            <input type="checkbox" id="exportIncludeCreds" />
+            <span>Include proxy usernames and passwords in export</span>
+          </label>
+          <div class="action-row">
+            <button type="button" class="btn btn-mint" id="exportJsonBtn">Download JSON backup</button>
+            <button type="button" class="btn btn-ghost" id="copyJsonBtn">Copy JSON</button>
+          </div>
+        </div>
+
+        <div class="surface-block">
+          <h2>Import JSON backup</h2>
+          <p class="muted">Restore from an Axon Proxy backup file or paste JSON directly.</p>
+          <div class="import-controls">
+            <select id="importMode">
+              <option value="merge">Merge with existing profiles &amp; rules</option>
+              <option value="replace">Replace entire configuration</option>
+            </select>
+            <label class="btn btn-ghost file-btn">
+              Choose JSON file
+              <input type="file" id="importFileInput" accept=".json,application/json" hidden />
+            </label>
+          </div>
+          <textarea id="importJsonText" rows="4" placeholder='Paste exported Axon Proxy JSON here…'></textarea>
+          <div class="action-row">
+            <button type="button" class="btn btn-primary" id="importJsonBtn">Import JSON</button>
+          </div>
+        </div>
+
+        <div class="surface-block">
+          <h2>Bulk domain list import</h2>
+          <p class="muted">Paste domains (one per line, comma-separated, or SwitchyOmega/AdBlock <code>||domain.com^</code> lines).</p>
+          <textarea id="bulkDomainText" rows="4" placeholder="*.youtube.com&#10;github.com&#10;discord.com"></textarea>
+          <div class="bulk-options">
+            <select id="bulkAction">
+              <option value="proxy">Use proxy</option>
+              <option value="direct">Bypass proxy (Direct)</option>
+            </select>
+            <select id="bulkProxyId">
+              <option value="">Active proxy</option>
+            </select>
+            <label class="checkbox-row">
+              <input type="checkbox" id="bulkCompanions" checked />
+              <span>Expand smart CDN bundles</span>
+            </label>
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn btn-primary" id="bulkImportBtn">Import domain rules</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAC & HELP -->
+      <section id="pac" class="section hidden">
+        <header class="section-header">
+          <div>
+            <h1>PAC &amp; diagnostics</h1>
+            <p>Inspect the exact Chrome proxy configuration or generated PAC script compiled from your rules.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="copyPacBtn">Copy script</button>
+        </header>
+
+        <div class="surface-block">
+          <div class="block-toolbar">
+            <h2 id="pacModeLabel">Active configuration</h2>
+            <span class="muted mono" id="pacMetaLabel">mode: direct</span>
+          </div>
+          <pre class="code-viewer" id="pacCodeViewer">// Proxy is currently disabled (direct mode).</pre>
+        </div>
+
+        <div class="surface-block help-card">
+          <h2>Pattern syntax &amp; routing guide</h2>
+          <ul>
+            <li><strong>Domain</strong>: <code>youtube.com</code> matches apex and all subdomains, plus companion CDNs (<code>googlevideo.com</code>, <code>ytimg.com</code>, <code>ggpht.com</code>) when Smart Bundles are on.</li>
+            <li><strong>Wildcard</strong>: <code>*.example.com</code> matches subdomains and apex; supports shell wildcards like <code>*cdn*.example.net</code>.</li>
+            <li><strong>RegExp</strong>: Regular expression tested against the full URL and hostname, e.g. <code>^https://.*\.internal\.dev/api/</code>.</li>
+            <li><strong>IP / CIDR</strong>: IPv4 subnet matching in PAC mode, e.g. <code>10.20.0.0/16</code>.</li>
+            <li><strong>SOCKS5 Remote DNS</strong>: PAC scripts always emit <code>SOCKS5 host:port</code> so DNS resolution tunnels securely through the proxy.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- RULE MODAL -->
+  <dialog class="modal" id="ruleModal">
+    <form id="ruleForm">
+      <div class="modal-header">
+        <h3 id="ruleModalTitle">Add rule</h3>
+        <button type="button" class="btn-close" id="closeRuleModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ruleId" />
+        <label class="field">
+          <span>Pattern</span>
+          <input type="text" id="rulePattern" placeholder="*.youtube.com" required />
+          <small id="optBundleHint">Supports domains, wildcards, RegExp, or IPv4 CIDR</small>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Match type</span>
+            <select id="ruleMatchType">
+              <option value="domain">Domain</option>
+              <option value="wildcard">Wildcard</option>
+              <option value="regex">RegExp</option>
+              <option value="cidr">IP / CIDR</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Action</span>
+            <select id="ruleAction">
+              <option value="proxy">Use proxy</option>
+              <option value="direct">Bypass proxy (Direct)</option>
+            </select>
+          </label>
+        </div>
+        <label class="field" id="optRuleProxyField">
+          <span>Target proxy</span>
+          <select id="ruleProxyId">
+            <option value="">Active proxy</option>
+          </select>
+        </label>
+        <label class="checkbox-row" id="optCompanionsRow">
+          <input type="checkbox" id="ruleIncludeCompanions" checked />
+          <span>Auto-include companion media &amp; CDN domains</span>
+        </label>
+        <p class="form-error hidden" id="ruleFormError"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelRuleModal">Cancel</button>
+        <button type="submit" class="btn btn-mint">Save rule</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- PROXY MODAL -->
+  <dialog class="modal" id="proxyModal">
+    <form id="proxyForm">
+      <div class="modal-header">
+        <h3 id="proxyModalTitle">Add proxy</h3>
+        <button type="button" class="btn-close" id="closeProxyModal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="proxyId" />
+        <label class="field">
+          <span>Quick paste URI (optional)</span>
+          <input type="text" id="proxyQuickPaste" placeholder="socks5://user:pass@127.0.0.1:1080" autocomplete="off" />
+        </label>
+        <div class="field-row">
+          <label class="field"><span>Name</span><input type="text" id="proxyName" placeholder="Netherlands" required /></label>
+          <label class="field"><span>Badge</span><input type="text" id="proxyBadge" placeholder="NL" maxlength="4" /></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>Host</span><input type="text" id="proxyHost" placeholder="127.0.0.1" required /></label>
+          <label class="field"><span>Port</span><input type="number" id="proxyPort" placeholder="1080" min="1" max="65535" required /></label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span>Protocol</span>
+            <select id="proxyType">
+              <option value="socks5">SOCKS5</option>
+              <option value="http">HTTP</option>
+              <option value="https">HTTPS</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Failover backup</span>
+            <select id="proxyFallback">
+              <option value="">None</option>
+            </select>
+          </label>
+        </div>
+        <div class="field">
+          <span>Badge color</span>
+          <div class="color-swatches" id="optColorSwatches"></div>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>Username (optional)</span><input type="text" id="proxyUser" autocomplete="off" /></label>
+          <label class="field"><span>Password (optional)</span><input type="password" id="proxyPass" autocomplete="off" /></label>
+        </div>
+        <p class="form-error hidden" id="formError"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelProxyModal">Cancel</button>
+        <button type="submit" class="btn btn-mint">Save proxy</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
